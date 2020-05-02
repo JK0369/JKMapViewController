@@ -15,12 +15,12 @@ open class MapViewController: UIViewController {
     public var mapView: MKMapView!
     public var longPressGestureRecogn: UILongPressGestureRecognizer!
     public var locationManager:CLLocationManager!
-    var myLocationsInfo: [Location] = []
-    var myImagesInfo: [PinLocation] = []
+    public var myLocationsInfo: [Location] = []
+    public var myImagesInfo: [PinLocation] = []
     
     static var cnt: Int = 0
     public var imageIcon: UIImage!
-    public var isOut = false // true면 맵에 그리는 것을 중지하는 것 && annotation표시 불가(맵 드래그로 이동 가능)
+    public var isStopDraw = false // true면 맵에 그리는 것을 중지하는 것 && annotation표시 불가(맵 드래그로 이동 가능)
     
     open override func viewDidLoad() {
         super.viewDidLoad()
@@ -45,9 +45,8 @@ open class MapViewController: UIViewController {
         
         // 클릭하여 pin 생성, 위 addPin액션 메서드와 연결
         longPressGestureRecogn = UILongPressGestureRecognizer(target: self, action: #selector(self.addPin(press:)))
-        longPressGestureRecogn.minimumPressDuration = 0.01
+        longPressGestureRecogn.minimumPressDuration = 0.0001
         mapView.addGestureRecognizer(longPressGestureRecogn)
-        
     }
     
     func setLocationManager() {
@@ -59,9 +58,9 @@ open class MapViewController: UIViewController {
         locationManager.startUpdatingLocation()
     }
     
-//     맵 클릭시, 그 위에 핀 놓기 : storyboard에서 Long Press Gesture Recognizer생성 또는 viewdidLoad에 객체 추가
+//     맵 클릭시, 그 위에 핀 놓기 : storyboard에서 Long Press Gesture Recognizer생성
      @objc func addPin(press:UILongPressGestureRecognizer) {
-
+        
          let location = press.location(in: self.mapView)
          let locCoord = self.mapView.convert(location, toCoordinateFrom: self.mapView)
          let annotation = MKPointAnnotation()
@@ -129,14 +128,12 @@ extension MapViewController: MKMapViewDelegate {
             let annotationView = mapView.dequeueReusableAnnotationView(withIdentifier: "reuseId") ?? MKAnnotationView()
             annotationView.canShowCallout = true
             
-            var img = self.imageIcon
-            
             // 직접 extension해서 추가한 resize함수
-            let width = self.view.frame.width / 10
-            let height = self.view.frame.height / 10
-            img = UIImage.resize(image: img!, targetSize: CGSize(width: width, height: height))
+            let width = self.view.frame.width / 7
+            let height = self.view.frame.height / 7
+            let img = UIImage.resize(image: self.imageIcon!, targetSize: CGSize(width: width, height: height))
             
-            annotationView.image = img!
+            annotationView.image = img
             
             return annotationView
         }
@@ -157,7 +154,7 @@ extension MapViewController: CLLocationManagerDelegate {
         self.draw(latitude: latitude, longitude: longitude, date: date)
     }
     
-    func draw(latitude: Double, longitude: Double, date: String) {
+    open func draw(latitude: Double, longitude: Double, date: String) {
         
         let latitudeTmp = latitude
         let longitudeTmp = longitude
@@ -178,7 +175,7 @@ extension MapViewController: CLLocationManagerDelegate {
         mapView.setRegion(newRegion, animated: true)
         
         // 중지 상태이면 맵에 흔적을 표시하지 않음
-        if(self.isOut == true) {
+        if(self.isStopDraw == true) {            
             self.myLocationsInfo.removeAll()
             return
         }
@@ -250,5 +247,52 @@ extension UIImage {
         let size = image.size
         let scaledSize = CGSize(width: size.width * scale, height: size.height * scale)
         return UIImage.resize(image: image, targetSize: scaledSize)
+    }
+}
+
+// MARK: - image picker
+extension MapViewController: UINavigationControllerDelegate, UIImagePickerControllerDelegate {
+       
+    public func selectImg() {
+        
+        let msg = "Select the image"
+        let sheet = UIAlertController(title: nil, message: msg, preferredStyle: .actionSheet)
+        
+        sheet.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+        
+        let savedAlbum = UIAlertAction(title: "Saved Album", style: .default) { (_) in
+            self.selectLibrary(src: .savedPhotosAlbum)
+        }
+        
+        let photoLibrary = UIAlertAction(title: "Photo Library", style: .default){(_) in
+            self.selectLibrary(src: .photoLibrary)
+        }
+        
+        let camera = UIAlertAction(title: "Camera", style: .default){(_) in
+            self.selectLibrary(src: .camera)
+        }
+        
+        sheet.addAction(savedAlbum)
+        sheet.addAction(photoLibrary)
+        sheet.addAction(camera)
+        
+        self.present(sheet, animated: false)
+    }
+    
+    private func selectLibrary(src: UIImagePickerController.SourceType) {
+        let picker = UIImagePickerController()
+        picker.delegate = self
+        picker.allowsEditing = true
+        
+        self.present(picker, animated: false)
+    }
+    
+    public func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+        
+        if let img = info[UIImagePickerController.InfoKey.originalImage] as? UIImage {
+            self.imageIcon = img
+        }
+        
+        self.dismiss(animated: true)
     }
 }

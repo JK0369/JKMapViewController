@@ -8,7 +8,7 @@
 
 import UIKit
 
-class PinLocation {
+open class PinLocation {
     public var cnt: Int = -1
     public var img: Data?
     public var latitude: Double = 0

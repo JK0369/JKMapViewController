@@ -11,6 +11,7 @@
 		4A399750245A97EF00118E1C /* MapViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A39974F245A97EF00118E1C /* MapViewController.swift */; };
 		4A399752245A97FB00118E1C /* Location.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A399751245A97FB00118E1C /* Location.swift */; };
 		4A399754245A980B00118E1C /* PinLocation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A399753245A980A00118E1C /* PinLocation.swift */; };
+		4AC30671245AC59E00F1E4B8 /* Footprint.png in Resources */ = {isa = PBXBuildFile; fileRef = 4AC30670245AC59E00F1E4B8 /* Footprint.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -21,6 +22,7 @@
 		4A399751245A97FB00118E1C /* Location.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Location.swift; sourceTree = "<group>"; };
 		4A399753245A980A00118E1C /* PinLocation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PinLocation.swift; sourceTree = "<group>"; };
 		4A399762245A988800118E1C /* libRealmSwift.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libRealmSwift.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		4AC30670245AC59E00F1E4B8 /* Footprint.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Footprint.png; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -54,6 +56,7 @@
 		4A399746245A97D700118E1C /* JKMapViewController */ = {
 			isa = PBXGroup;
 			children = (
+				4AC30670245AC59E00F1E4B8 /* Footprint.png */,
 				4A399747245A97D700118E1C /* JKMapViewController.h */,
 				4A399748245A97D700118E1C /* Info.plist */,
 				4A39974F245A97EF00118E1C /* MapViewController.swift */,
@@ -141,6 +144,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4AC30671245AC59E00F1E4B8 /* Footprint.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
