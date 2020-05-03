@@ -15,8 +15,7 @@ open class MapViewController: UIViewController {
     public var mapView: MKMapView!
     public var longPressGestureRecogn: UILongPressGestureRecognizer!
     public var locationManager:CLLocationManager!
-    public var myLocationsInfo: [Location] = []
-    public var myImagesInfo: [PinLocation] = []
+    public var myLocationsInfo: [Location] = []    
     
     static var cnt: Int = 0
     public var imageIcon: UIImage!
@@ -88,17 +87,16 @@ open class MapViewController: UIViewController {
             let longitude: Double = annotation.coordinate.longitude
             let img = self.imageIcon
 
-            var count = 0
-            if let cnt = self.myLocationsInfo.last?.cnt {
-                count = cnt
+            for item in self.myLocationsInfo {
+                if item.imgLatitude != -1 {
+                    continue
+                } else {
+                    item.img = img?.jpegData(compressionQuality: 0.9)
+                    item.imgLatitude = latitude
+                    item.imgLongitude = longitude
+                    break
+                }
             }
-
-            let tmpObj = PinLocation()
-            tmpObj.cnt = count
-            tmpObj.img = img?.jpegData(compressionQuality: 0.9)
-            tmpObj.latitude = latitude
-            tmpObj.longitude = longitude
-            self.myImagesInfo.append(tmpObj)
 
             self.mapView.addAnnotation(annotation)
         }
