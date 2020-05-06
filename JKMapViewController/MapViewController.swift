@@ -20,6 +20,9 @@ open class MapViewController: UIViewController {
     static var cnt: Int = 0
     public var imageIcon: UIImage!
     public var isStopDraw = false // true면 맵에 그리는 것을 중지하는 것 && annotation표시 불가(맵 드래그로 이동 가능)
+    public var absoluteDraw = false
+    
+    public var imageFromTable: UIImage! = nil
     
     open override func viewDidLoad() {
         super.viewDidLoad()
@@ -61,15 +64,16 @@ open class MapViewController: UIViewController {
      @objc func addPin(press:UILongPressGestureRecognizer) {
         
          let location = press.location(in: self.mapView)
+        print("클릭 당시의 좌표 결과 = \(location)")
          let locCoord = self.mapView.convert(location, toCoordinateFrom: self.mapView)
          let annotation = MKPointAnnotation()
-
          annotation.coordinate = locCoord
          getAlert(annotation: annotation)
 
      }
 
     func getAlert(annotation: MKPointAnnotation) {
+        
         let alert = UIAlertController(title: "input the location name", message: "what is the this information?", preferredStyle: .alert)
 
         let cancel = UIAlertAction(title: "cancel", style: .cancel)
@@ -118,23 +122,39 @@ extension MapViewController: MKMapViewDelegate {
         return polylineRenderer
     }
     
-    // annotation이 만들어 질 때 생성
+    // annotation이 만들어 질 때 실행
     public func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
+        
+        /// table view에서 호출한 경우
+        if let imageFromOther = self.imageFromTable{
+            print("self.imageFromTable=\(imageFromOther)")
+            return registerImageInMapView(mapView: mapView, annotation: annotation, imgParam: imageFromOther)
+        } else { /// 터치해서 어노테이션 추가 한 경우
+            return registerImageInMapView(mapView: mapView, annotation: annotation, imgParam: self.imageIcon!)
+        }
+    }
+    
+    private func registerImageInMapView(mapView: MKMapView, annotation: MKAnnotation, imgParam: UIImage) -> MKAnnotationView? {
         if annotation is MKUserLocation {
             return nil
         } else {
             let annotationView = mapView.dequeueReusableAnnotationView(withIdentifier: "reuseId") ?? MKAnnotationView()
             annotationView.canShowCallout = true
+            annotationView.annotation = annotation
             
             // 직접 extension해서 추가한 resize함수
             let width = self.view.frame.width / 7
             let height = self.view.frame.height / 7
-            let img = UIImage.resize(image: self.imageIcon!, targetSize: CGSize(width: width, height: height))
-            
+            let img = UIImage.resize(image: imgParam, targetSize: CGSize(width: width, height: height))
             annotationView.image = img
             
+//            이미지가 찍히기는 함 (애플 보다 위에 이미지 찍힌 것 확인 -- gps정밀도 확인하기)
+            
+            /// init : 안해주면 이미지 피커에서 이미지를 골라도 무조건 이 이미지로 annotation되므로
+            self.imageFromTable = nil
             return annotationView
         }
+        
     }
 }
 
@@ -146,7 +166,7 @@ extension MapViewController: CLLocationManagerDelegate {
         let longitude = locations[0].coordinate.longitude
         
         let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+        formatter.dateFormat = "yyyyMMddHHmmss"
         let date = formatter.string(from: Date())
         
         self.draw(latitude: latitude, longitude: longitude, date: date)
@@ -159,7 +179,7 @@ extension MapViewController: CLLocationManagerDelegate {
         let curDate = date
         
         let totalData = Location()
-        totalData.date = getSequenceDate(strValue: curDate)
+        totalData.date = NumberFormatter().number(from: curDate)!.doubleValue
         totalData.latitude = latitudeTmp
         totalData.longitude = longitudeTmp
         
@@ -173,7 +193,8 @@ extension MapViewController: CLLocationManagerDelegate {
         mapView.setRegion(newRegion, animated: true)
         
         // 중지 상태이면 맵에 흔적을 표시하지 않음
-        if(self.isStopDraw == true) {            
+        // 단, CSTalbieViewController객체가 테이블 뷰를 선택하여 그리도록 한 것은 그림
+        if(self.isStopDraw == true && absoluteDraw == false) {            
             self.myLocationsInfo.removeAll()
             return
         }
@@ -196,24 +217,6 @@ extension MapViewController: CLLocationManagerDelegate {
             mapView.addOverlay(polyline)
         }
     }
-    
-    func getSequenceDate(strValue: String) -> Double {
-        let valueArr = strValue.components(separatedBy: " ")
-        let valueFirstArr = valueArr[0].components(separatedBy: "-")
-        let valueSecondArr = valueArr[1].components(separatedBy: ":")
-        var valueStr = ""
-        
-        for i in 0..<3 {
-            valueStr += valueFirstArr[i]
-        }
-        
-        for i in 0..<3 {
-            valueStr += valueSecondArr[i]
-        }
-        
-        return NumberFormatter().number(from: valueStr)!.doubleValue
-    }
-    
 }
 
 // MARK: - resize image
