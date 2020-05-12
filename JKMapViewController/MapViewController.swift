@@ -64,10 +64,10 @@ open class MapViewController: UIViewController {
      @objc func addPin(press:UILongPressGestureRecognizer) {
         
          let location = press.location(in: self.mapView)
-        print("클릭 당시의 좌표 결과 = \(location)")
          let locCoord = self.mapView.convert(location, toCoordinateFrom: self.mapView)
          let annotation = MKPointAnnotation()
          annotation.coordinate = locCoord
+        
          getAlert(annotation: annotation)
 
      }
@@ -95,6 +95,8 @@ open class MapViewController: UIViewController {
                 if item.imgLatitude != -1 {
                     continue
                 } else {
+                    /// 이미지가 존재 하는 경우, 기존 경로 정보에 이미지 정보 추가
+                    print("latitude=\(latitude), longitude=\(longitude)")
                     item.img = img?.jpegData(compressionQuality: 0.9)
                     item.imgLatitude = latitude
                     item.imgLongitude = longitude
@@ -127,9 +129,9 @@ extension MapViewController: MKMapViewDelegate {
         
         /// table view에서 호출한 경우
         if let imageFromOther = self.imageFromTable{
-            print("self.imageFromTable=\(imageFromOther)")
             return registerImageInMapView(mapView: mapView, annotation: annotation, imgParam: imageFromOther)
         } else { /// 터치해서 어노테이션 추가 한 경우
+            print("클릭하자마자 결과 = \(annotation.coordinate)")
             return registerImageInMapView(mapView: mapView, annotation: annotation, imgParam: self.imageIcon!)
         }
     }
@@ -142,13 +144,10 @@ extension MapViewController: MKMapViewDelegate {
             annotationView.canShowCallout = true
             annotationView.annotation = annotation
             
-            // 직접 extension해서 추가한 resize함수
             let width = self.view.frame.width / 7
             let height = self.view.frame.height / 7
             let img = UIImage.resize(image: imgParam, targetSize: CGSize(width: width, height: height))
             annotationView.image = img
-            
-//            이미지가 찍히기는 함 (애플 보다 위에 이미지 찍힌 것 확인 -- gps정밀도 확인하기)
             
             /// init : 안해주면 이미지 피커에서 이미지를 골라도 무조건 이 이미지로 annotation되므로
             self.imageFromTable = nil
